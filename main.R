@@ -43,9 +43,11 @@ server <- function(input, output) {
     
     myTimestamp <- input$Date
     data <- ds.getSymbol.yahoo(Symbol, from = Sys.Date() - myTimestamp, to = Sys.Date())
-    dataAux <- data[,"SAN.MC.Open"]
+    dataAux <- data[,c("SAN.MC.Open", "SAN.MC.Close")]
+    # ggplot(dataAux, aes(x = Index, y = SAN.MC.Open)) + geom_path()
     ggplot(dataAux, aes(x = Index, y = SAN.MC.Open)) + 
       geom_line(colour = "blue") + 
+      geom_line(aes(x = Index, y = SAN.MC.Close), colour = "red") +
       theme(plot.background = element_rect(fill = "#1a080a"), axis.text = element_text(colour = "white"), axis.title = element_text(colour = "white"))
     
   })
