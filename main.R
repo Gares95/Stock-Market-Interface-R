@@ -47,13 +47,10 @@ server <- function(input, output) {
     dataAux <- data.frame(date=index(dataAux), coredata(dataAux))
     dataAux <- melt(data = dataAux, id.vars = c("date"), measure.vars = c("SAN.MC.Open", "SAN.MC.Close"))
     
-    # ggplot(data = dataAux, aes(x=Index)) + 
-    #   geom_line(aes(y = SAN.MC.Open), colour = "blue") + 
-    #   geom_line(aes(y = SAN.MC.Close), colour = "red") +
-    #   # theme(plot.background = element_rect(fill = "#1a080a"), axis.text = element_text(colour = "white"), axis.title = element_text(colour = "white"), legend.position="top")
-    #   theme(legend.position="top")
     ggplot(dataAux, aes(x = date, y = value, colour = variable)) + 
-      geom_line()
+      geom_line() +
+      theme(plot.background = element_rect(fill = "#1a080a"), axis.text = element_text(colour = "white"), axis.title = element_text(colour = "white"), legend.background = element_rect(fill = "#1a080a"), legend.title = element_text(color = "white", size = 14), legend.text = element_text(color = "white"))
+      
     
   })
   
