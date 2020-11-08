@@ -49,7 +49,7 @@ server <- function(input, output) {
     
     ggplot(dataAux, aes(x = date, y = value, colour = variable)) + 
       geom_line() +
-      theme(plot.background = element_rect(fill = "#1a080a"), axis.text = element_text(colour = "white"), axis.title = element_text(colour = "white"), legend.background = element_rect(fill = "#1a080a"), legend.title = element_text(color = "white", size = 14), legend.text = element_text(color = "white"))
+      theme_dark()
       
     
   })
