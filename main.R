@@ -10,6 +10,13 @@ library(reshape)
 # install.packages("shinythemes")
 library(shinythemes)
 
+# install.packages("plotly")
+# library(plotly)
+####################################
+# install.packages("dygraphs")
+library(dygraphs)
+###################################
+
 elements <- read.csv("./data/stock_market.csv", header = TRUE, sep = ';', fileEncoding = "UTF-8")
 myelements <- unname(unlist(elements['Ticker']))
 names(myelements) <- unname(unlist(elements['Name']))
@@ -46,7 +53,8 @@ ui <- fluidPage(theme = shinytheme("superhero"),
     mainPanel(
       
       # Output: Histogram ----
-      plotOutput(outputId = "distPlot")
+      plotOutput(outputId = "distPlot"),
+      dygraphOutput("dygraph")
       
     )
   )
@@ -60,17 +68,32 @@ server <- function(input, output) {
     data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - myTimestamp, to = Sys.Date())
     dataAux <- data[,c(1, 4)]
     names(dataAux) <- c("Open", "Close")
+    
     dataAux <- data.frame(date=index(dataAux), coredata(dataAux))
     dataAux <- melt(data = dataAux, id.vars = c("date"), measure.vars = c(2,3))
     
-    
-    ggplot(dataAux, aes(x = date, y = value, colour = variable)) + 
+    myplot <- ggplot(dataAux, aes(x = date, y = value, colour = variable)) + 
       geom_line() + 
+      geom_point() +
       ggtitle(input$Company) +
       theme(plot.title = element_text(size=14, face="bold")) +
       labs (colour = "Open and Close Values")
     
+    myplot
+      
   })
+  
+  output$dygraph <- renderDygraph({
+    req(input$Company)
+    myTimestamp <- input$Date
+    data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - myTimestamp, to = Sys.Date())
+    dataAux <- data[,c(1, 4)]
+    names(dataAux) <- c("Open", "Close")
+    # ggplotly(myplot)
+    dygraph(dataAux) %>% dyRangeSelector()
+    
+  })
+  
   
 }
 
