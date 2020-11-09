@@ -24,7 +24,7 @@ names(myelements) <- unname(unlist(elements['Name']))
 # Symbol <- "SAN.MC"
 
 # Define UI for app that draws a histogram ----
-ui <- fluidPage(theme = shinytheme("superhero"),
+ui <- fluidPage( #theme = shinytheme("superhero"),
   
   # App title ----
   titlePanel("Stock Market"),
