@@ -4,19 +4,36 @@ library(shiny)
 library(ggplot2)
 # install.packages("rtsdata")
 library(rtsdata)
+# install.packages("reshape")
+library(reshape)
 
+# install.packages("shinythemes")
+library(shinythemes)
 
-Symbol <- "SAN.MC"
+elements <- read.csv("./data/stock_market.csv", header = TRUE, sep = ';', fileEncoding = "UTF-8")
+myelements <- unname(unlist(elements['Ticker']))
+names(myelements) <- unname(unlist(elements['Name']))
+
+# Symbol <- "SAN.MC"
 
 # Define UI for app that draws a histogram ----
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("superhero"),
   
   # App title ----
-  titlePanel("Stock Market - Santander Bank"),
+  titlePanel("Stock Market"),
   
   sidebarLayout(
     # Main panel for displaying outputs ----
     sidebarPanel(
+      
+      selectizeInput("Company",
+                     NULL,
+                     # choices= c('Enter company name' = '', unique(companies)),
+                     choices= c('Enter company name' = '', unique(names(myelements))),
+                     # multiple=TRUE,
+                     selected= NULL,
+                     multiple=FALSE,
+                     options = NULL),
       
       # Input: Slider for the number of bins ----
       sliderInput(inputId = "Date",
@@ -40,16 +57,17 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   output$distPlot <- renderPlot({
-    
+    req(input$Company)
     myTimestamp <- input$Date
-    data <- ds.getSymbol.yahoo(Symbol, from = Sys.Date() - myTimestamp, to = Sys.Date())
-    dataAux <- data[,c("SAN.MC.Open", "SAN.MC.Close")]
+    data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - myTimestamp, to = Sys.Date())
+    dataAux <- data[,c(1, 4)]
     dataAux <- data.frame(date=index(dataAux), coredata(dataAux))
-    dataAux <- melt(data = dataAux, id.vars = c("date"), measure.vars = c("SAN.MC.Open", "SAN.MC.Close"))
+    dataAux <- melt(data = dataAux, id.vars = c("date"), measure.vars = c(2,3))
     
     ggplot(dataAux, aes(x = date, y = value, colour = variable)) + 
-      geom_line() +
-      theme_dark()
+      geom_line() + 
+      ggtitle(input$Company) + 
+      theme(plot.title = element_text(size=14, face="bold"))
       
     
   })
