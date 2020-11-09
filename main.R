@@ -53,8 +53,11 @@ ui <- fluidPage( #theme = shinytheme("superhero"),
     mainPanel(
       
       # Output: Histogram ----
-      plotOutput(outputId = "distPlot"),
-      dygraphOutput("dygraph")
+      
+      tabsetPanel(
+        tabPanel("Plot", plotOutput(outputId = "distPlot")), 
+        tabPanel("Interactive Plot", dygraphOutput("dygraph"))
+      )
       
     )
   )
