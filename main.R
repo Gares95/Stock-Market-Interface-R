@@ -28,9 +28,7 @@ ui <- fluidPage(theme = shinytheme("superhero"),
       
       selectizeInput("Company",
                      NULL,
-                     # choices= c('Enter company name' = '', unique(companies)),
                      choices= c('Enter company name' = '', unique(names(myelements))),
-                     # multiple=TRUE,
                      selected= NULL,
                      multiple=FALSE,
                      options = NULL),
@@ -40,7 +38,7 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                   label = "Days back:",
                   min = 1,
                   max = 365,
-                  value = 30)
+                  value = 120)
       
     ),
     
@@ -61,14 +59,16 @@ server <- function(input, output) {
     myTimestamp <- input$Date
     data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - myTimestamp, to = Sys.Date())
     dataAux <- data[,c(1, 4)]
+    names(dataAux) <- c("Open", "Close")
     dataAux <- data.frame(date=index(dataAux), coredata(dataAux))
     dataAux <- melt(data = dataAux, id.vars = c("date"), measure.vars = c(2,3))
     
+    
     ggplot(dataAux, aes(x = date, y = value, colour = variable)) + 
       geom_line() + 
-      ggtitle(input$Company) + 
-      theme(plot.title = element_text(size=14, face="bold"))
-      
+      ggtitle(input$Company) +
+      theme(plot.title = element_text(size=14, face="bold")) +
+      labs (colour = "Open and Close Values")
     
   })
   
