@@ -1,8 +1,14 @@
 # Data Lake with Spark
 ***
-This repository includes the files neccessary to build an interface using the **R** package _Shiny_ to display information of the stock market. It includes tools to select the company (from the dataset uploaded with over 1890 companies in 50 different countries around the world) and the time period to display. 
+This repository includes the files necessary  to build an interface using the **R** package _Shiny_ to display information of the stock market. It includes the necessary tools to select the company (from the dataset uploaded with over 1890 companies in 50 different countries around the world) and the time period to display. 
 
-The first version of this repository allows to see the _Open_ and _Close_ values of the stock market for each company during this year.
+The first version of this repository allows to see the next values of the stock market for each company during this year:
+- Open Values
+- Close Values
+- High
+- Low
+- Volume
+- Adjusted Value
 
 The interface includes an interactive plot.
 
