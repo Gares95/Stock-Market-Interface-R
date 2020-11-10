@@ -25,11 +25,10 @@ vNames <- c("Open", "High", "Low", "Close", "Volume", "Adjusted")
 names(vNames) <- 1:6
 # Symbol <- "SAN.MC"
 
-
 ui <- fluidPage( #theme = shinytheme("superhero"),
   
   
-  titlePanel("Stock Market"),
+  titlePanel("Stock Market Data"),
   
   sidebarLayout(
     
@@ -52,7 +51,7 @@ ui <- fluidPage( #theme = shinytheme("superhero"),
                      separator = " - "),
       
       checkboxGroupInput("variableSelect", 
-                         h3("Values to show"), 
+                         h3("Values"), 
                          choices = list("Open Values" = 1, 
                                         "Close Values" = 4, 
                                         "High" = 2,
@@ -62,9 +61,7 @@ ui <- fluidPage( #theme = shinytheme("superhero"),
                          selected = 1)
     ),
     
-    
     mainPanel(
-      
       tabsetPanel(
         tabPanel("Plot", plotOutput(outputId = "distPlot")), 
         tabPanel("Interactive Plot", dygraphOutput("dygraph"))
@@ -96,7 +93,6 @@ server <- function(input, output) {
       theme(plot.title = element_text(size=14, face="bold")) +
       labs (colour = "Values")
     
-      
   })
   
   output$dygraph <- renderDygraph({
@@ -113,7 +109,6 @@ server <- function(input, output) {
     dygraph(dataAux) %>% dyRangeSelector()
     
   })
-  
   
 }
 
