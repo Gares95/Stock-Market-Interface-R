@@ -23,14 +23,14 @@ names(myelements) <- unname(unlist(elements['Name']))
 
 # Symbol <- "SAN.MC"
 
-# Define UI for app that draws a histogram ----
+
 ui <- fluidPage( #theme = shinytheme("superhero"),
   
-  # App title ----
+  
   titlePanel("Stock Market"),
   
   sidebarLayout(
-    # Main panel for displaying outputs ----
+    
     sidebarPanel(
       
       selectizeInput("Company",
@@ -40,19 +40,23 @@ ui <- fluidPage( #theme = shinytheme("superhero"),
                      multiple=FALSE,
                      options = NULL),
       
-      # Input: Slider for the number of bins ----
-      sliderInput(inputId = "Date",
-                  label = "Days back:",
-                  min = 1,
-                  max = 365,
-                  value = 120)
+      # sliderInput(inputId = "Date",
+      #             label = "Days back:",
+      #             min = 1,
+      #             max = 365,
+      #             value = 120)
+      
+      
+      sliderInput(inputId = 'Date', 
+                  label = div(style='width:240px;', 
+                              div(style='float:left;', toString(Sys.Date()-365)), 
+                              div(style='float:right;', toString(Sys.Date()))), 
+                  min = 1, max = 365, value = c(120, 365), width = '300px')
       
     ),
     
-    # Main panel for displaying outputs ----
+    
     mainPanel(
-      
-      # Output: Histogram ----
       
       tabsetPanel(
         tabPanel("Plot", plotOutput(outputId = "distPlot")), 
@@ -62,13 +66,16 @@ ui <- fluidPage( #theme = shinytheme("superhero"),
     )
   )
 )
-# Define server logic required to draw a histogram ----
+
 server <- function(input, output) {
   
   output$distPlot <- renderPlot({
     req(input$Company)
-    myTimestamp <- input$Date
-    data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - myTimestamp, to = Sys.Date())
+    # myTimestamp <- input$Date
+    start <- input$Date[1]
+    end <- input$Date[2]
+    # data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - myTimestamp, to = Sys.Date())
+    data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - end, to = Sys.Date() - start)
     dataAux <- data[,c(1, 4)]
     names(dataAux) <- c("Open", "Close")
     
@@ -88,8 +95,10 @@ server <- function(input, output) {
   
   output$dygraph <- renderDygraph({
     req(input$Company)
-    myTimestamp <- input$Date
-    data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - myTimestamp, to = Sys.Date())
+    start <- input$Date[1]
+    end <- input$Date[2]
+    # data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - myTimestamp, to = Sys.Date())
+    data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - end, to = Sys.Date() - start)
     dataAux <- data[,c(1, 4)]
     names(dataAux) <- c("Open", "Close")
     # ggplotly(myplot)
