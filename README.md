@@ -16,13 +16,13 @@ The dataset used for this project is:
     - Country
     
 # Requirements
-For the interface to work it is necessary to install the next packages:
-    - shiny
-    - ggplot2
-    - rtsdata
-    - reshape
-    - shinythemes
-    - dygraphs
+For the interface to work it is necessary to install the next packages:  
+- shiny  
+- ggplot2  
+- rtsdata  
+- reshape  
+- shinythemes  
+- dygraphs  
 
 # Images of the interface
 
