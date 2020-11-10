@@ -21,6 +21,8 @@ elements <- read.csv("./data/stock_market.csv", header = TRUE, sep = ';', fileEn
 myelements <- unname(unlist(elements['Ticker']))
 names(myelements) <- unname(unlist(elements['Name']))
 
+vNames <- c("Open", "High", "Low", "Close", "Volume", "Adjusted")
+names(vNames) <- 1:6
 # Symbol <- "SAN.MC"
 
 
@@ -82,6 +84,7 @@ server <- function(input, output) {
     data <- ds.getSymbol.yahoo(myelements[input$Company], from = start, to = end)
     variablesSelected <<- as.integer(input$variableSelect)
     dataAux <- data[,variablesSelected]
+    names(dataAux) <- vNames[variablesSelected]
     
     dataAux <- data.frame(date=index(dataAux), coredata(dataAux))
     dataAux <- melt(data = dataAux, id.vars = c("date"), measure.vars = c(2:ncol(dataAux)))
@@ -101,8 +104,11 @@ server <- function(input, output) {
     start <- input$Date[1]
     end <- input$Date[2]
     data <- ds.getSymbol.yahoo(myelements[input$Company], from = start, to = end)
-    dataAux <- data[,c(1, 4)]
-    names(dataAux) <- c("Open", "Close")
+    # dataAux <- data[,c(1, 4)]
+    # names(dataAux) <- c("Open", "Close")
+    variablesSelected <<- as.integer(input$variableSelect)
+    dataAux <- data[,variablesSelected]
+    names(dataAux) <- vNames[variablesSelected]
     # ggplotly(myplot)
     dygraph(dataAux) %>% dyRangeSelector()
     
