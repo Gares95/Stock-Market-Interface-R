@@ -34,7 +34,7 @@ ui <- fluidPage( #theme = shinytheme("superhero"),
     sidebarPanel(
       
       selectizeInput("Company",
-                     NULL,
+                     h3("Company name"),
                      choices= c('Enter company name' = '', unique(names(myelements))),
                      selected= NULL,
                      multiple=FALSE,
@@ -46,9 +46,18 @@ ui <- fluidPage( #theme = shinytheme("superhero"),
                      end   = Sys.Date() - 1,
                      min    = Sys.Date() - 730,
                      max    = Sys.Date(),
-                     # format = "yy/mm/dd",
-                     format = "dd/mm/yy",
-                     separator = " - ")
+                     format = "dd/mm/yyyy",
+                     separator = " - "),
+      
+      checkboxGroupInput("variableSelect", 
+                         h3("Values to show"), 
+                         choices = list("Open Values" = 1, 
+                                        "Close Values" = 4, 
+                                        "High" = 2,
+                                        "Low" = 3, 
+                                        "Volume" = 5,
+                                        "Adjusted" = 6),
+                         selected = 1)
     ),
     
     
@@ -67,24 +76,23 @@ server <- function(input, output) {
   
   output$distPlot <- renderPlot({
     req(input$Company)
-    # myTimestamp <- input$Date
+    
     start <- format(input$Date[1])
     end <- format(input$Date[2])
     data <- ds.getSymbol.yahoo(myelements[input$Company], from = start, to = end)
-    dataAux <- data[,c(1, 4)]
-    names(dataAux) <- c("Open", "Close")
+    variablesSelected <<- as.integer(input$variableSelect)
+    dataAux <- data[,variablesSelected]
     
     dataAux <- data.frame(date=index(dataAux), coredata(dataAux))
-    dataAux <- melt(data = dataAux, id.vars = c("date"), measure.vars = c(2,3))
+    dataAux <- melt(data = dataAux, id.vars = c("date"), measure.vars = c(2:ncol(dataAux)))
     
-    myplot <- ggplot(dataAux, aes(x = date, y = value, colour = variable)) + 
+    ggplot(dataAux, aes(x = date, y = value, colour = variable)) + 
       geom_line() + 
       geom_point() +
       ggtitle(input$Company) +
       theme(plot.title = element_text(size=14, face="bold")) +
-      labs (colour = "Open and Close Values")
+      labs (colour = "Values")
     
-    myplot
       
   })
   
