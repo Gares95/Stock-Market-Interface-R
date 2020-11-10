@@ -61,10 +61,23 @@ ui <- fluidPage( theme = shinytheme("sandstone"),
     ),
     
     mainPanel(
-      tabsetPanel(
-        tabPanel("Plot", plotOutput(outputId = "distPlot")), 
-        tabPanel("Interactive Plot", dygraphOutput("dygraph"))
+      navbarPage(NULL,
+                 tabPanel("Plot",
+                          plotOutput(outputId = "distPlot")
+                          
+                 ),
+                 tabPanel("Interactive",
+                          dygraphOutput("dygraph")
+                 )
+                 
       )
+      
+      
+      
+      # tabsetPanel(
+      #   tabPanel("Plot", plotOutput(outputId = "distPlot")), 
+      #   tabPanel("Interactive Plot", dygraphOutput("dygraph"))
+      # )
       
     )
   )
