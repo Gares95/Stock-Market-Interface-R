@@ -46,7 +46,8 @@ ui <- fluidPage( #theme = shinytheme("superhero"),
                      end   = Sys.Date() - 1,
                      min    = Sys.Date() - 730,
                      max    = Sys.Date(),
-                     format = "yy/mm/dd",
+                     # format = "yy/mm/dd",
+                     format = "dd/mm/yy",
                      separator = " - ")
     ),
     
