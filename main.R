@@ -47,11 +47,20 @@ ui <- fluidPage( #theme = shinytheme("superhero"),
       #             value = 120)
       
       
-      sliderInput(inputId = 'Date', 
-                  label = div(style='width:240px;', 
-                              div(style='float:left;', toString(Sys.Date()-365)), 
-                              div(style='float:right;', toString(Sys.Date()))), 
-                  min = 1, max = 365, value = c(120, 365), width = '300px')
+      # sliderInput(inputId = 'Date', 
+      #             label = div(style='width:240px;', 
+      #                         div(style='float:left;', toString(Sys.Date()-365)), 
+      #                         div(style='float:right;', toString(Sys.Date()))), 
+      #             min = 1, max = 365, value = c(120, 365), width = '300px')
+      
+      dateRangeInput(inputId = 'Date', 
+                     h3("Date range"),
+                     start = Sys.Date() - 30,
+                     end   = Sys.Date() - 1,
+                     min    = Sys.Date() - 730,
+                     max    = Sys.Date(),
+                     format = "yy/mm/dd",
+                     separator = " - ")
       
     ),
     
@@ -72,10 +81,11 @@ server <- function(input, output) {
   output$distPlot <- renderPlot({
     req(input$Company)
     # myTimestamp <- input$Date
-    start <- input$Date[1]
-    end <- input$Date[2]
+    start <- format(input$Date[1])
+    end <- format(input$Date[2])
     # data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - myTimestamp, to = Sys.Date())
-    data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - end, to = Sys.Date() - start)
+    # data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - end, to = Sys.Date() - start)
+    data <- ds.getSymbol.yahoo(myelements[input$Company], from = start, to = end)
     dataAux <- data[,c(1, 4)]
     names(dataAux) <- c("Open", "Close")
     
@@ -98,7 +108,8 @@ server <- function(input, output) {
     start <- input$Date[1]
     end <- input$Date[2]
     # data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - myTimestamp, to = Sys.Date())
-    data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - end, to = Sys.Date() - start)
+    # data <- ds.getSymbol.yahoo(myelements[input$Company], from = Sys.Date() - end, to = Sys.Date() - start)
+    data <- ds.getSymbol.yahoo(myelements[input$Company], from = start, to = end)
     dataAux <- data[,c(1, 4)]
     names(dataAux) <- c("Open", "Close")
     # ggplotly(myplot)
