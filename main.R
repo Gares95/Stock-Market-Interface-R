@@ -25,8 +25,7 @@ vNames <- c("Open", "High", "Low", "Close", "Volume", "Adjusted")
 names(vNames) <- 1:6
 # Symbol <- "SAN.MC"
 
-ui <- fluidPage( #theme = shinytheme("superhero"),
-  
+ui <- fluidPage( theme = shinytheme("sandstone"),
   
   titlePanel("Stock Market Data"),
   
@@ -43,7 +42,7 @@ ui <- fluidPage( #theme = shinytheme("superhero"),
       
       dateRangeInput(inputId = 'Date', 
                      h3("Date range"),
-                     start = Sys.Date() - 30,
+                     start = Sys.Date() - 90,
                      end   = Sys.Date() - 1,
                      min    = Sys.Date() - 730,
                      max    = Sys.Date(),
@@ -106,7 +105,8 @@ server <- function(input, output) {
     dataAux <- data[,variablesSelected]
     names(dataAux) <- vNames[variablesSelected]
     # ggplotly(myplot)
-    dygraph(dataAux) %>% dyRangeSelector()
+    dygraph(dataAux) %>% dyRangeSelector() #%>% 
+      # dyShading(from = start, to = end, color = "white")
     
   })
   
