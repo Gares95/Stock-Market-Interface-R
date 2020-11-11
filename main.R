@@ -1,3 +1,5 @@
+
+# Install and load packages
 # install.packages("shiny")
 # install.packages("ggplot2")
 library(shiny)
@@ -17,29 +19,43 @@ library(shinythemes)
 library(dygraphs)
 ###################################
 
+# Load file with company names and Tickers to extract values from yahoo finances
 elements <- read.csv("./data/stock_market.csv", header = TRUE, sep = ';', fileEncoding = "UTF-8")
-myelements <- unname(unlist(elements['Ticker']))
-names(myelements) <- unname(unlist(elements['Name']))
 
+# Create variable with company names and their Symbols as values
+CompanySymbol <- unname(unlist(elements['Ticker']))
+names(CompanySymbol) <- unname(unlist(elements['Name']))
+
+# Variable with the type of values to display
 vNames <- c("Open", "High", "Low", "Close", "Volume", "Adjusted")
 names(vNames) <- 1:6
+
 # Symbol <- "SAN.MC"
 
-ui <- fluidPage( theme = shinytheme("sandstone"),
+
+# Defining User Interface
+ui <- fluidPage( 
+  # apply 'sandstone' theme
+  theme = shinytheme("sandstone"),
   
+  # Add title panel
   titlePanel("Stock Market Data"),
+  
   
   sidebarLayout(
     
+    # Create sidebar panel
     sidebarPanel(
       
+      # Create section to select the company
       selectizeInput("Company",
                      h3("Company name"),
-                     choices= c('Enter company name' = '', unique(names(myelements))),
+                     choices= c('Enter company name' = '', unique(names(CompanySymbol))),
                      selected= NULL,
                      multiple=FALSE,
                      options = NULL),
       
+      # Create section to select the dates of the date range
       dateRangeInput(inputId = 'Date', 
                      h3("Date range"),
                      start = Sys.Date() - 90,
@@ -49,6 +65,7 @@ ui <- fluidPage( theme = shinytheme("sandstone"),
                      format = "dd/mm/yyyy",
                      separator = " - "),
       
+      # Create section to select the values to display in plot
       checkboxGroupInput("variableSelect", 
                          h3("Values"), 
                          choices = list("Open Values" = 1, 
@@ -60,24 +77,22 @@ ui <- fluidPage( theme = shinytheme("sandstone"),
                          selected = 1)
     ),
     
+    # Main Panel
     mainPanel(
+      
+      # Create navbar to select between the standard plot and the interactive plot
       navbarPage(NULL,
                  tabPanel("Plot",
+                          # Standard plot
                           plotOutput(outputId = "distPlot")
                           
                  ),
                  tabPanel("Interactive",
+                          # Interactive plot
                           dygraphOutput("dygraph")
                  )
                  
       )
-      
-      
-      
-      # tabsetPanel(
-      #   tabPanel("Plot", plotOutput(outputId = "distPlot")), 
-      #   tabPanel("Interactive Plot", dygraphOutput("dygraph"))
-      # )
       
     )
   )
@@ -86,18 +101,28 @@ ui <- fluidPage( theme = shinytheme("sandstone"),
 server <- function(input, output) {
   
   output$distPlot <- renderPlot({
+    # Added 'require' to wait until the user selects a company
     req(input$Company)
     
+    # Give values from the date range selected
     start <- format(input$Date[1])
     end <- format(input$Date[2])
-    data <- ds.getSymbol.yahoo(myelements[input$Company], from = start, to = end)
+    
+    # Use 'rtsdata' to obtain data from yahoo finances using the Symbol from the company selected in the interface
+    data <- ds.getSymbol.yahoo(CompanySymbol[input$Company], from = start, to = end)
+    
+    # Transform to integer the variables selected from the check box to filter dataframe for those values
     variablesSelected <<- as.integer(input$variableSelect)
     dataAux <- data[,variablesSelected]
     names(dataAux) <- vNames[variablesSelected]
     
+    # Create dataframe from the xts object
     dataAux <- data.frame(date=index(dataAux), coredata(dataAux))
+    
+    # Use function melt to define proper structure of Dataframe to represent with ggplot
     dataAux <- melt(data = dataAux, id.vars = c("date"), measure.vars = c(2:ncol(dataAux)))
     
+    # Display dataframe
     ggplot(dataAux, aes(x = date, y = value, colour = variable)) + 
       geom_line() + 
       geom_point() +
@@ -108,16 +133,23 @@ server <- function(input, output) {
   })
   
   output$dygraph <- renderDygraph({
+    # Added 'require' to wait until the user selects a company
     req(input$Company)
+    
+    # Give values from the date range selected
     start <- input$Date[1]
     end <- input$Date[2]
-    data <- ds.getSymbol.yahoo(myelements[input$Company], from = start, to = end)
-    # dataAux <- data[,c(1, 4)]
-    # names(dataAux) <- c("Open", "Close")
-    variablesSelected <<- as.integer(input$variableSelect)
+    
+    # Use 'rtsdata' to obtain data from yahoo finances using the Symbol from the company selected in the interface
+    data <- ds.getSymbol.yahoo(CompanySymbol[input$Company], from = start, to = end)
+    
+    # Transform to integer the variables selected from the check box to filter dataframe for those values
+    variablesSelected <- as.integer(input$variableSelect)
     dataAux <- data[,variablesSelected]
     names(dataAux) <- vNames[variablesSelected]
     # ggplotly(myplot)
+    
+    # Display interactive plot
     dygraph(dataAux) %>% dyRangeSelector() #%>% 
       # dyShading(from = start, to = end, color = "white")
     
@@ -125,4 +157,5 @@ server <- function(input, output) {
   
 }
 
+# Start application
 shinyApp(ui = ui, server = server)
