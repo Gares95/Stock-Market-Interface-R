@@ -186,16 +186,20 @@ server <- function(input, output) {
                             Max=numeric(),
                             Avg=numeric(),
                             Median=numeric(),
-                            Volatility=character(),
+                            Standard_deviation=numeric(),
+                            Sd=character(),
                             stringsAsFactors=FALSE)
+    
+    names(tableInfo)[names(tableInfo) == "Sd"] <- "Sd(%)"
     
     # Fill the table
     for (i in 1:length(variablesSelected)){
       tableInfo[nrow(tableInfo)+1,] <- c("Min" = min(as.numeric(coredata(dataAux[,i])), na.rm = TRUE), 
                                          "Max" = max(as.numeric(coredata(dataAux[,i])), na.rm = TRUE),
-                                         "Avg" = mean(as.numeric(coredata(dataAux[,i])), na.rm = TRUE), 
-                                         "Median" = median(as.numeric(coredata(dataAux[,i]))), 
-                                         "Volatility"= paste(round(sd(as.numeric(coredata(dataAux[,i]))) / mean(as.numeric(coredata(dataAux[,i]))), 3), "%"))
+                                         "Avg" = round(mean(as.numeric(coredata(dataAux[,i])), na.rm = TRUE), 2),
+                                         "Median" = round(median(as.numeric(coredata(dataAux[,i]))),  2),
+                                         "Standard deviation" = round(sd(as.numeric(coredata(dataAux[,i]))),  2),
+                                         "Sd(%)"= paste(round(sd(as.numeric(coredata(dataAux[,i]))) / mean(as.numeric(coredata(dataAux[,i]))), 3)*100, "%"))
       
     }
     rownames(tableInfo) <- vNames[variablesSelected]
