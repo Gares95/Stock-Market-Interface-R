@@ -19,6 +19,9 @@ library(shinythemes)
 library(dygraphs)
 ###################################
 
+# install.packages("tseries")
+# library(tseries)
+
 # Load file with company names and Tickers to extract values from yahoo finances
 elements <- read.csv("./data/stock_market.csv", header = TRUE, sep = ';', fileEncoding = "UTF-8")
 
@@ -182,11 +185,17 @@ server <- function(input, output) {
     tableInfo <- data.frame(Min=numeric(),
                             Max=numeric(),
                             Avg=numeric(),
+                            Median=numeric(),
+                            Volatility=character(),
                             stringsAsFactors=FALSE)
     
     # Fill the table
     for (i in 1:length(variablesSelected)){
-      tableInfo[nrow(tableInfo)+1,] <- c("Min" = min(as.numeric(coredata(dataAux[,i])), na.rm = TRUE), "Max" = max(as.numeric(coredata(dataAux[,i])), na.rm = TRUE),"Avg" = mean(as.numeric(coredata(dataAux[,i])), na.rm = TRUE))
+      tableInfo[nrow(tableInfo)+1,] <- c("Min" = min(as.numeric(coredata(dataAux[,i])), na.rm = TRUE), 
+                                         "Max" = max(as.numeric(coredata(dataAux[,i])), na.rm = TRUE),
+                                         "Avg" = mean(as.numeric(coredata(dataAux[,i])), na.rm = TRUE), 
+                                         "Median" = median(as.numeric(coredata(dataAux[,i]))), 
+                                         "Volatility"= paste(round(sd(as.numeric(coredata(dataAux[,i]))) / mean(as.numeric(coredata(dataAux[,i]))), 3), "%"))
       
     }
     rownames(tableInfo) <- vNames[variablesSelected]
