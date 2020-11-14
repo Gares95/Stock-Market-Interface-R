@@ -87,6 +87,10 @@ ui <- fluidPage(
                           plotOutput(outputId = "distPlot")
                           
                  ),
+                 tabPanel("Table",
+                          # Table with relevant info
+                          tableOutput("InfoValues")
+                 ),
                  tabPanel("Interactive",
                           # Interactive plot
                           dygraphOutput("dygraph")
@@ -100,6 +104,7 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   
+  # Regular plot
   output$distPlot <- renderPlot({
     # Added 'require' to wait until the user selects a company
     req(input$Company)
@@ -132,6 +137,7 @@ server <- function(input, output) {
     
   })
   
+  # Interactive plot
   output$dygraph <- renderDygraph({
     # Added 'require' to wait until the user selects a company
     req(input$Company)
@@ -151,11 +157,44 @@ server <- function(input, output) {
     
     # Display interactive plot
     dygraph(dataAux) %>% dyRangeSelector() #%>% 
-      # dyShading(from = start, to = end, color = "white")
+    # dyShading(from = start, to = end, color = "white")
     
   })
+  
+  
+  # Table  ----
+  output$InfoValues <- renderTable({
+    # Added 'require' to wait until the user selects a company
+    req(input$Company)
+    
+    # Give values from the date range selected
+    start <- input$Date[1]
+    end <- input$Date[2]
+    
+    # Use 'rtsdata' to obtain data from yahoo finances using the Symbol from the company selected in the interface
+    data <- ds.getSymbol.yahoo(CompanySymbol[input$Company], from = start, to = end)
+    
+    # Transform to integer the variables selected from the check box to filter dataframe for those values
+    variablesSelected <- as.integer(input$variableSelect)
+    dataAux <- data[,variablesSelected]
+    names(dataAux) <- vNames[variablesSelected]
+    # create empty dataframe for our table
+    tableInfo <- data.frame(Min=numeric(),
+                            Max=numeric(),
+                            Avg=numeric(),
+                            stringsAsFactors=FALSE)
+    
+    # Fill the table
+    for (i in 1:length(variablesSelected)){
+      tableInfo[nrow(tableInfo)+1,] <- c("Min" = min(as.numeric(coredata(dataAux[,i])), na.rm = TRUE), "Max" = max(as.numeric(coredata(dataAux[,i])), na.rm = TRUE),"Avg" = mean(as.numeric(coredata(dataAux[,i])), na.rm = TRUE))
+      
+    }
+    rownames(tableInfo) <- vNames[variablesSelected]
+    tableInfo
+  }, rownames = TRUE)
   
 }
 
 # Start application
 shinyApp(ui = ui, server = server)
+
