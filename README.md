@@ -36,4 +36,6 @@ For the interface to work it is necessary to install the next packages:
 
 ![alt text](https://raw.githubusercontent.com/Gares95/Stock-Market-Interface-R/master/Img/MainPage.PNG)
 
+![alt text](https://raw.githubusercontent.com/Gares95/Stock-Market-Interface-R/master/Img/table.PNG)
+
 ![alt text](https://raw.githubusercontent.com/Gares95/Stock-Market-Interface-R/master/Img/Interactive2.png)
