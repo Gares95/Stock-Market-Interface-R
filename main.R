@@ -42,7 +42,7 @@ ui <- fluidPage(
   theme = shinytheme("sandstone"),
   
   # Add title panel
-  titlePanel("Stock Market Data"),
+  titlePanel("Stock Market Screener"),
   
   
   sidebarLayout(
