@@ -59,11 +59,15 @@ ui <- fluidPage(
                      options = NULL),
       
       # Create section to select the dates of the date range
-      dateRangeInput(inputId = 'Date', 
-                     h3("Date range"),
+      radioButtons("ranges", 
+                   h3("Date range"),
+                   choices = list("1 week" = 1, 
+                                  "1 year" = 2, 
+                                  "5 years" = 3, 
+                                  "Customized" = 4),selected = 4),
+      dateRangeInput(inputId = 'Date',  label = NULL,
                      start = Sys.Date() - 90,
                      end   = Sys.Date() - 1,
-                     min    = Sys.Date() - 730,
                      max    = Sys.Date(),
                      format = "dd/mm/yyyy",
                      separator = " - "),
@@ -105,7 +109,52 @@ ui <- fluidPage(
   )
 )
 
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  # Implement observations to automate the updates of the inputs in the date range
+  observeEvent(input$ranges, {
+    aux <<- input$ranges
+    if (input$ranges == "1"){
+      updateDateRangeInput(session,
+                           'Date',
+                           start = Sys.Date() - 7)
+    }
+    else if (input$ranges == "2"){
+      updateDateRangeInput(session,
+                           'Date',
+                           start = Sys.Date() - 365)
+    }
+    else if (input$ranges == "3"){
+      updateDateRangeInput(session,
+                           'Date',
+                           start = Sys.Date() - 1825)
+    }
+  }, ignoreInit = TRUE)
+  
+  observeEvent(input$Date, {
+    myDates <<- input$Date
+    if (input$Date[1]== Sys.Date() - 7){
+      updateRadioButtons(session,
+                         'ranges',
+                         selected = 1)
+    }
+    else if (input$Date[1]== Sys.Date() - 365){
+      updateRadioButtons(session,
+                         'ranges',
+                         selected = 2)
+    }
+    else if (input$Date[1]== Sys.Date() - 1825){
+      updateRadioButtons(session,
+                         'ranges',
+                         selected = 3)
+    }
+    else {
+      updateRadioButtons(session,
+                         'ranges',
+                         selected = 4)
+    }
+  }, ignoreInit = TRUE)
+  
   
   # Regular plot
   output$distPlot <- renderPlot({
