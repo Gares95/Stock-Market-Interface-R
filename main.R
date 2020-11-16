@@ -1,5 +1,6 @@
 
 # Install and load packages
+
 # install.packages("shiny")
 # install.packages("ggplot2")
 library(shiny)
@@ -12,15 +13,8 @@ library(reshape)
 # install.packages("shinythemes")
 library(shinythemes)
 
-# install.packages("plotly")
-# library(plotly)
-####################################
 # install.packages("dygraphs")
 library(dygraphs)
-###################################
-
-# install.packages("tseries")
-# library(tseries)
 
 # Load file with company names and Tickers to extract values from yahoo finances
 elements <- read.csv("./data/stock_market.csv", header = TRUE, sep = ';', fileEncoding = "UTF-8")
@@ -32,9 +26,6 @@ names(CompanySymbol) <- unname(unlist(elements['Name']))
 # Variable with the type of values to display
 vNames <- c("Open", "High", "Low", "Close", "Volume", "Adjusted")
 names(vNames) <- 1:6
-
-# Symbol <- "SAN.MC"
-
 
 # Defining User Interface
 ui <- fluidPage( 
@@ -155,7 +146,7 @@ server <- function(input, output, session) {
     }
   }, ignoreInit = TRUE)
   
-  dataInput <- reactive({
+  dataInput <<- reactive({
     # Added 'require' to wait until the user selects a company
     req(input$Company)
     
@@ -163,14 +154,25 @@ server <- function(input, output, session) {
     start <- format(input$Date[1])
     end <- format(input$Date[2])
     
-    # Use 'rtsdata' to obtain data from yahoo finances using the Symbol from the company selected in the interface
-    data <- ds.getSymbol.yahoo(CompanySymbol[input$Company], from = start, to = end)
+    # Implemented try to handle errors
+    tryCatch({
+      # Use 'rtsdata' to obtain data from yahoo finances using the Symbol from the company selected in the interface
+      data <- ds.getSymbol.yahoo(CompanySymbol[input$Company], from = start, to = end)
+      
+      # Transform to integer the variables selected from the check box to filter dataframe for those values
+      variablesSelected <<- as.integer(input$variableSelect)
+      dataAux <- data[,variablesSelected]
+      names(dataAux) <- vNames[variablesSelected]
+      return(dataAux)
+    }, message = function(e) {
+      return(e$message)
+    }, warning = function(e) {
+      return(e$message)
+    }, error = function(e) {
+      dataAux <- xts(1, as.Date(1))
+      return(dataAux)
+    })
     
-    # Transform to integer the variables selected from the check box to filter dataframe for those values
-    variablesSelected <<- as.integer(input$variableSelect)
-    dataAux <- data[,variablesSelected]
-    names(dataAux) <- vNames[variablesSelected]
-    return(dataAux)
   })
   # Regular plot
   output$distPlot <- renderPlot({
@@ -181,13 +183,22 @@ server <- function(input, output, session) {
     # Use function melt to define proper structure of Dataframe to represent with ggplot
     dataAux <- melt(data = dataAux, id.vars = c("date"), measure.vars = c(2:ncol(dataAux)))
     
-    # Display dataframe
-    ggplot(dataAux, aes(x = date, y = value, colour = variable)) + 
-      geom_line() + 
-      geom_point() +
-      ggtitle(input$Company) +
-      theme(plot.title = element_text(size=14, face="bold")) +
-      labs (colour = "Values")
+    if (nrow(dataAux)<2){
+      dataAux <- data.frame()
+      ggplot(dataAux) + geom_point() + xlim(0, 10) + ylim(0, 100) +
+        annotate("text", x = 4, y = 25, label = paste("Unable to import:", CompanySymbol[input$Company], "for the period of time selected.")) +
+        annotate("text", x = 4, y = 20, label = "Please select a different company or change the date range selected")
+    }
+    
+    else{
+      # Display dataframe
+      ggplot(dataAux, aes(x = date, y = value, colour = variable)) + 
+        geom_line() + 
+        geom_point() +
+        ggtitle(input$Company) +
+        theme(plot.title = element_text(size=14, face="bold")) +
+        labs (colour = "Values")
+    }
     
   })
   
@@ -199,7 +210,6 @@ server <- function(input, output, session) {
     # dyShading(from = start, to = end, color = "white")
     
   })
-  
   
   # Table  ----
   output$InfoValues <- renderTable({
@@ -226,7 +236,6 @@ server <- function(input, output, session) {
                                          "Median" = round(median(as.numeric(coredata(dataInput()[,i])), na.rm = TRUE),  2),
                                          "Standard deviation" = round(sd(as.numeric(coredata(dataInput()[,i])), na.rm = TRUE),  2),
                                          "Sd(%)"= paste(round(sd(as.numeric(coredata(dataInput()[,i])), na.rm = TRUE) / mean(as.numeric(coredata(dataInput()[,i])), na.rm = TRUE), 3)*100, "%"))
-      
     }
     rownames(tableInfo) <- vNames[variablesSelected]
     tableInfo
@@ -236,4 +245,3 @@ server <- function(input, output, session) {
 
 # Start application
 shinyApp(ui = ui, server = server)
-
