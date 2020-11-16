@@ -155,9 +155,7 @@ server <- function(input, output, session) {
     }
   }, ignoreInit = TRUE)
   
-  
-  # Regular plot
-  output$distPlot <- renderPlot({
+  dataInput <- reactive({
     # Added 'require' to wait until the user selects a company
     req(input$Company)
     
@@ -172,9 +170,13 @@ server <- function(input, output, session) {
     variablesSelected <<- as.integer(input$variableSelect)
     dataAux <- data[,variablesSelected]
     names(dataAux) <- vNames[variablesSelected]
+    return(dataAux)
+  })
+  # Regular plot
+  output$distPlot <- renderPlot({
     
     # Create dataframe from the xts object
-    dataAux <- data.frame(date=index(dataAux), coredata(dataAux))
+    dataAux <- data.frame(date=index(dataInput()), coredata(dataInput()))
     
     # Use function melt to define proper structure of Dataframe to represent with ggplot
     dataAux <- melt(data = dataAux, id.vars = c("date"), measure.vars = c(2:ncol(dataAux)))
@@ -191,24 +193,9 @@ server <- function(input, output, session) {
   
   # Interactive plot
   output$dygraph <- renderDygraph({
-    # Added 'require' to wait until the user selects a company
-    req(input$Company)
-    
-    # Give values from the date range selected
-    start <- input$Date[1]
-    end <- input$Date[2]
-    
-    # Use 'rtsdata' to obtain data from yahoo finances using the Symbol from the company selected in the interface
-    data <- ds.getSymbol.yahoo(CompanySymbol[input$Company], from = start, to = end)
-    
-    # Transform to integer the variables selected from the check box to filter dataframe for those values
-    variablesSelected <- as.integer(input$variableSelect)
-    dataAux <- data[,variablesSelected]
-    names(dataAux) <- vNames[variablesSelected]
-    # ggplotly(myplot)
     
     # Display interactive plot
-    dygraph(dataAux) %>% dyRangeSelector() #%>% 
+    dygraph(dataInput()) %>% dyRangeSelector() #%>% 
     # dyShading(from = start, to = end, color = "white")
     
   })
@@ -216,20 +203,10 @@ server <- function(input, output, session) {
   
   # Table  ----
   output$InfoValues <- renderTable({
-    # Added 'require' to wait until the user selects a company
-    req(input$Company)
-    
-    # Give values from the date range selected
-    start <- input$Date[1]
-    end <- input$Date[2]
-    
-    # Use 'rtsdata' to obtain data from yahoo finances using the Symbol from the company selected in the interface
-    data <- ds.getSymbol.yahoo(CompanySymbol[input$Company], from = start, to = end)
     
     # Transform to integer the variables selected from the check box to filter dataframe for those values
     variablesSelected <- as.integer(input$variableSelect)
-    dataAux <- data[,variablesSelected]
-    names(dataAux) <- vNames[variablesSelected]
+    
     # create empty dataframe for our table
     tableInfo <- data.frame(Min=numeric(),
                             Max=numeric(),
@@ -243,12 +220,12 @@ server <- function(input, output, session) {
     
     # Fill the table
     for (i in 1:length(variablesSelected)){
-      tableInfo[nrow(tableInfo)+1,] <- c("Min" = min(as.numeric(coredata(dataAux[,i])), na.rm = TRUE), 
-                                         "Max" = max(as.numeric(coredata(dataAux[,i])), na.rm = TRUE),
-                                         "Avg" = round(mean(as.numeric(coredata(dataAux[,i])), na.rm = TRUE), 2),
-                                         "Median" = round(median(as.numeric(coredata(dataAux[,i]))),  2),
-                                         "Standard deviation" = round(sd(as.numeric(coredata(dataAux[,i]))),  2),
-                                         "Sd(%)"= paste(round(sd(as.numeric(coredata(dataAux[,i]))) / mean(as.numeric(coredata(dataAux[,i]))), 3)*100, "%"))
+      tableInfo[nrow(tableInfo)+1,] <- c("Min" = min(as.numeric(coredata(dataInput()[,i])), na.rm = TRUE), 
+                                         "Max" = max(as.numeric(coredata(dataInput()[,i])), na.rm = TRUE),
+                                         "Avg" = round(mean(as.numeric(coredata(dataInput()[,i])), na.rm = TRUE), 2),
+                                         "Median" = round(median(as.numeric(coredata(dataInput()[,i])), na.rm = TRUE),  2),
+                                         "Standard deviation" = round(sd(as.numeric(coredata(dataInput()[,i])), na.rm = TRUE),  2),
+                                         "Sd(%)"= paste(round(sd(as.numeric(coredata(dataInput()[,i])), na.rm = TRUE) / mean(as.numeric(coredata(dataInput()[,i])), na.rm = TRUE), 3)*100, "%"))
       
     }
     rownames(tableInfo) <- vNames[variablesSelected]
